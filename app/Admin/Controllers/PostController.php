@@ -3,15 +3,15 @@
 namespace App\Admin\Controllers;
 
 use App\Models\Author;
+use App\Models\Post;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
-use Illuminate\Http\Request;
 
-class AuthorController extends Controller
+class PostController extends Controller
 {
     use HasResourceActions;
 
@@ -24,8 +24,8 @@ class AuthorController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Authors')
-            ->description('dashboard')
+            ->header('Index')
+            ->description('description')
             ->body($this->grid());
     }
 
@@ -80,20 +80,14 @@ class AuthorController extends Controller
      */
     protected function grid()
     {
-        $grid = new Grid(new Author);
+        $grid = new Grid(new Post);
 
-        $grid->filter(function($filter){
-            $filter->like('name', 'Name');
-            $filter->like('lastname', 'Last Name');
-            $filter->like('email', 'Email');
-            $filter->like('created_at', 'Created At')->date();
-            $filter->like('updated_at', 'Updated At')->date();
+        $grid->author_id('Author')->display(function($authorId) {
+            return Author::find($authorId)->name;
         });
-
         $grid->id('Id');
-        $grid->name('Name');
-        $grid->lastname('Last Name');
-        $grid->email('Email');
+        $grid->title('Title');
+        $grid->slug('Slug');
         $grid->created_at('Created at');
         $grid->updated_at('Updated at');
 
@@ -108,14 +102,25 @@ class AuthorController extends Controller
      */
     protected function detail($id)
     {
-        $show = new Show(Author::findOrFail($id));
+        $show = new Show(Post::findOrFail($id));
 
         $show->id('Id');
-        $show->name('Name');
-        $show->lastname('Last Name');
-        $show->email('Email');
+        $show->title('Title');
+        $show->slug('Slug');
+        $show->description('Description');
+        $show->body('Body');
         $show->created_at('Created at');
         $show->updated_at('Updated at');
+
+        $show->author('Author information', function ($author) {
+
+            $author->setResource('/admin/authors');
+
+            $author->id();
+            $author->name();
+            $author->lastname();
+            $author->email();
+        });
 
         return $show;
     }
@@ -127,38 +132,20 @@ class AuthorController extends Controller
      */
     protected function form()
     {
-        $form = new Form(new Author);
+        $form = new Form(new Post);
 
-        $form->text('name', 'Name');
-        $form->text('lastname', 'Last Name');
-        $form->email('email', 'Email');
-        $form->password('password', trans('admin.password'))->rules('required|confirmed');
-        $form->password('password_confirmation', trans('admin.password_confirmation'))->rules('required')
-            ->default(function ($form) {
-                return $form->model()->password;
-            });
+        $form->select('author_id', 'Author')->rules('required')->options(function ($id) {
+            $author = Author::find($id);
 
-        $form->ignore(['password_confirmation']);
-
-        $form->saving(function (Form $form) {
-            if ($form->password && $form->model()->password != $form->password) {
-                $form->password = bcrypt($form->password);
+            if ($author) {
+                return [$author->id => $author->name];
             }
-        });
+        })->ajax('/admin/api/authors');
+        $form->text('title', 'Title')->rules('required');
+        $form->text('slug', 'Slug')->rules('required');
+        $form->editor('description', 'Description');
+        $form->editor('body', 'Body');
 
         return $form;
-    }
-
-    /**
-     * Authors API for select in posts..
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    public function authors(Request $request)
-    {
-        $q = $request->get('q');
-
-        return Author::where('name', 'like', "%$q%")->paginate(null, ['id', 'name as text']);
     }
 }

@@ -11,6 +11,10 @@ Route::group([
 ], function (Router $router) {
 
     $router->get('/', 'HomeController@index');
+
     $router->resource('authors', AuthorController::class);
+    $router->get('/api/authors', 'AuthorController@authors');
+
+    $router->resource('posts', PostController::class);
 
 });

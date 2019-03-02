@@ -25,4 +25,14 @@ class Author extends Authenticatable
      * @var array
      */
     protected $hidden = ['remember_token'];
+
+    /**
+     * Get all author posts.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function posts()
+    {
+        return $this->hasMany('App\Models\Post');
+    }
 }
