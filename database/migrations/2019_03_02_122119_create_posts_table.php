@@ -18,7 +18,7 @@ class CreatePostsTable extends Migration
             $table->foreign('author_id')->references('id')->on('authors');
             $table->increments('id');
             $table->text('title');
-            $table->text('slug');
+            $table->string('slug', 255)->unique();
             $table->mediumText('description')->nullable();
             $table->longText('body')->nullable();
             $table->timestamps();

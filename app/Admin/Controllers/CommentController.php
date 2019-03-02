@@ -2,16 +2,16 @@
 
 namespace App\Admin\Controllers;
 
-use App\Models\Author;
-use App\Models\Post;
+use App\Models\Comment;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
 use Encore\Admin\Form;
 use Encore\Admin\Grid;
 use Encore\Admin\Layout\Content;
 use Encore\Admin\Show;
+use App\Models\Post;
 
-class PostController extends Controller
+class CommentController extends Controller
 {
     use HasResourceActions;
 
@@ -80,14 +80,12 @@ class PostController extends Controller
      */
     protected function grid()
     {
-        $grid = new Grid(new Post);
+        $grid = new Grid(new Comment);
 
-        $grid->author_id('Author')->display(function($authorId) {
-            return Author::find($authorId)->name;
-        });
         $grid->id('Id');
-        $grid->title('Title');
-        $grid->slug('Slug');
+        $grid->body('Body');
+        $grid->commentable_id('Commentable id');
+        $grid->commentable_type('Commentable type');
         $grid->created_at('Created at');
         $grid->updated_at('Updated at');
 
@@ -102,32 +100,14 @@ class PostController extends Controller
      */
     protected function detail($id)
     {
-        $show = new Show(Post::findOrFail($id));
+        $show = new Show(Comment::findOrFail($id));
 
         $show->id('Id');
-        $show->title('Title');
-        $show->slug('Slug');
-        $show->description('Description');
         $show->body('Body');
+        $show->commentable_id('Commentable id');
+        $show->commentable_type('Commentable type');
         $show->created_at('Created at');
         $show->updated_at('Updated at');
-
-        $show->author('Author information', function ($author) {
-
-            $author->setResource('/admin/authors');
-
-            $author->id();
-            $author->name();
-            $author->lastname();
-            $author->email();
-        });
-
-        $show->comments('Comments information', function ($comments) {
-            $comments->setResource('/admin/comments');
-
-            $comments->id();
-            $comments->body();
-        });
 
         return $show;
     }
@@ -139,34 +119,12 @@ class PostController extends Controller
      */
     protected function form()
     {
-        $form = new Form(new Post);
+        $form = new Form(new Comment);
 
-        $form->select('author_id', 'Author')->rules('required')->options(function ($id) {
-            $author = Author::find($id);
-
-            if ($author) {
-                return [$author->id => $author->name];
-            }
-        })->ajax('/admin/api/authors');
-        $form->text('title', 'Title')->rules('required');
-        $form->text('slug', 'Slug')->rules('required');
-        $form->editor('description', 'Description');
-        $form->editor('body', 'Body');
+        $form->textarea('body', 'Body');
+        $form->number('commentable_id', 'Commentable ID');
+        $form->text('commentable_type', 'Commentable type');
 
         return $form;
-    }
-
-
-    /**
-     * Posts API for select in comments..
-     *
-     * @param Request $request
-     * @return mixed
-     */
-    public function authors(Request $request)
-    {
-        $q = $request->get('q');
-
-        return Post::where('title', 'like', "%$q%")->paginate(null, ['id', 'name as text']);
     }
 }
