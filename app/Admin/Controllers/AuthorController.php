@@ -23,8 +23,8 @@ class AuthorController extends Controller
     public function index(Content $content)
     {
         return $content
-            ->header('Index')
-            ->description('description')
+            ->header('Authors')
+            ->description('dashboard')
             ->body($this->grid());
     }
 
@@ -81,13 +81,18 @@ class AuthorController extends Controller
     {
         $grid = new Grid(new Author);
 
+        $grid->filter(function($filter){
+            $filter->like('name', 'Name');
+            $filter->like('lastname', 'Last Name');
+            $filter->like('email', 'Email');
+            $filter->like('created_at', 'Created At')->date();
+            $filter->like('updated_at', 'Updated At')->date();
+        });
+
         $grid->id('Id');
         $grid->name('Name');
-        $grid->name('Last Name');
+        $grid->lastname('Last Name');
         $grid->email('Email');
-        $grid->email_verified_at('Email verified at');
-        $grid->password('Password');
-        $grid->remember_token('Remember token');
         $grid->created_at('Created at');
         $grid->updated_at('Updated at');
 
@@ -104,7 +109,12 @@ class AuthorController extends Controller
     {
         $show = new Show(Author::findOrFail($id));
 
-
+        $show->id('Id');
+        $show->name('Name');
+        $show->lastname('Last Name');
+        $show->email('Email');
+        $show->created_at('Created at');
+        $show->updated_at('Updated at');
 
         return $show;
     }
@@ -118,7 +128,22 @@ class AuthorController extends Controller
     {
         $form = new Form(new Author);
 
+        $form->text('name', 'Name');
+        $form->text('lastname', 'Last Name');
+        $form->email('email', 'Email');
+        $form->password('password', trans('admin.password'))->rules('required|confirmed');
+        $form->password('password_confirmation', trans('admin.password_confirmation'))->rules('required')
+            ->default(function ($form) {
+                return $form->model()->password;
+            });
 
+        $form->ignore(['password_confirmation']);
+
+        $form->saving(function (Form $form) {
+            if ($form->password && $form->model()->password != $form->password) {
+                $form->password = bcrypt($form->password);
+            }
+        });
 
         return $form;
     }
