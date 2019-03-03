@@ -40,6 +40,8 @@ services:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 20s
       retries: 10
+    networks:
+      - elk
 
   nginx:
     image: nginx:latest
@@ -52,6 +54,8 @@ services:
       - php-fpm
       - elasticsearch
       - kibana
+    networks:
+      - elk
 
   php-fpm:
     build: "./php-fpm/"
@@ -62,6 +66,8 @@ services:
     volumes:
       - ./../:/app
     tty: true
+    networks:
+      - elk
     depends_on:
       mysql:
         condition: service_healthy
