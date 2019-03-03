@@ -2,6 +2,7 @@
 
 namespace App\Admin\Controllers;
 
+use App\Models\Author;
 use App\Models\Comment;
 use App\Http\Controllers\Controller;
 use Encore\Admin\Controllers\HasResourceActions;
@@ -103,11 +104,29 @@ class CommentController extends Controller
         $show = new Show(Comment::findOrFail($id));
 
         $show->id('Id');
+        $show->author_id('Author ID');
         $show->body('Body');
         $show->commentable_id('Commentable id');
         $show->commentable_type('Commentable type');
         $show->created_at('Created at');
         $show->updated_at('Updated at');
+
+        $show->author('Author information', function ($author) {
+
+            $author->setResource('/admin/authors');
+
+            $author->id();
+            $author->name();
+            $author->lastname();
+            $author->email();
+        });
+
+        $show->comments('Comments information', function ($comments) {
+            $comments->setResource('/admin/comments');
+
+            $comments->id();
+            $comments->body();
+        });
 
         return $show;
     }
@@ -121,9 +140,17 @@ class CommentController extends Controller
     {
         $form = new Form(new Comment);
 
+
+        $form->select('author_id', 'Author')->rules('required')->options(function ($id) {
+            $author = Author::find($id);
+
+            if ($author) {
+                return [$author->id => $author->name];
+            }
+        })->ajax('/admin/api/authors');
         $form->textarea('body', 'Body');
-        $form->number('commentable_id', 'Commentable ID');
-        $form->text('commentable_type', 'Commentable type');
+        $form->number('commentable_id', 'Commentable ID')->rules('required');
+        $form->text('commentable_type', 'Commentable type')->rules('required');
 
         return $form;
     }

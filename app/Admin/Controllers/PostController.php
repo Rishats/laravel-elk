@@ -163,7 +163,7 @@ class PostController extends Controller
      * @param Request $request
      * @return mixed
      */
-    public function authors(Request $request)
+    public function posts(Request $request)
     {
         $q = $request->get('q');
 

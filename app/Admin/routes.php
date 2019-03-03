@@ -18,6 +18,6 @@ Route::group([
     $router->resource('posts', PostController::class);
 
     $router->resource('comments', CommentController::class);
-    $router->get('/api/posts', 'PostController@authors');
+    $router->get('/api/posts', 'PostController@posts');
 
 });
