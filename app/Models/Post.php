@@ -6,6 +6,7 @@ use App\Configurators\PostIndexConfigurator;
 use Illuminate\Database\Eloquent\Model;
 use Cviebrock\EloquentSluggable\Sluggable;
 use ScoutElastic\Searchable;
+use App\SearchRules\PostSearchRule;
 
 class Post extends Model
 {
@@ -15,7 +16,7 @@ class Post extends Model
     protected $indexConfigurator = PostIndexConfigurator::class;
 
     protected $searchRules = [
-        //
+        PostSearchRule::class
     ];
 
     // Here you can specify a mapping for a model fields.

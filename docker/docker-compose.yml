@@ -36,6 +36,8 @@ services:
       MYSQL_DATABASE: elk.test
       MYSQL_USER: homestead
       MYSQL_PASSWORD: secret
+    ports:
+      - "3306:3306"
     healthcheck:
       test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
       timeout: 20s
